@@ -1,0 +1,14 @@
+# Dev environment files
+.env
+!.envrc
+
+# pytest
+.pytest_cache/
+__pycache__/
+
+
+# Virtualenv
+.venv
+
+# datas
+data
