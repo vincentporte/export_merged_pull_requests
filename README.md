@@ -1,4 +1,5 @@
-# export_merged_pr
+# Export Merged Pull Requests
+
 A Python script to export merged pull requests assigned to a user within a specified time period.
 
 ## Setup
