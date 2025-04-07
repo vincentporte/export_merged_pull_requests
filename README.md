@@ -34,3 +34,8 @@ pytest tests/
 ```
 ## License
 This project is licensed under GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.
+
+
+## Next Steps
+- Add CI/CD pipeline for automated testing and deployment.
+- Enhance tests to cover more cases.
