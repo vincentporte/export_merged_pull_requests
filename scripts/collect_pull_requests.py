@@ -1,6 +1,7 @@
 import argparse
 import os
 import re
+from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
@@ -32,7 +33,7 @@ def fetch_pull_requests(url, headers, params):
     print(f"Error: {response.status_code}, {response.text}")
     return [], response.headers
 
-def format_pull_requests(pull_request):
+def format_pull_request(pull_request):
     labels = [label['name'] for label in pull_request.get('labels', [])]
     labels_text = f"Labels: {', '.join(labels)}" if labels else "No labels"
     return (
@@ -42,10 +43,10 @@ def format_pull_requests(pull_request):
         f"{labels_text}\n\n"
     )
 
-def save_pull_requests_to_file(filename, formatted_pull_requests):
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, "w", encoding="utf-8") as file:
-        file.write(formatted_pull_requests)
+def save_to_file(filename, content):
+    filepath = Path(filename)
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    filepath.write_text(content, encoding="utf-8")
 
 def main():
     if not TOKEN or not USERNAME or not OWNER or not REPO:
@@ -75,19 +76,20 @@ def main():
     output_filename = get_filename(args.start_date, args.end_date, args.username)
     url = BASE_URL
 
-    formatted_pull_requests = ""
+    formatted_pull_requests = []
 
     while url:
         pull_requests, response_headers = fetch_pull_requests(url, HEADERS, params)
         if pull_requests:
             print(f"Fetched {len(pull_requests)} pull requests.")
-            for pull_request in pull_requests:
-                formatted_pull_requests += format_pull_requests(pull_request)
-            
-            save_pull_requests_to_file(output_filename, formatted_pull_requests)
+            formatted_pull_requests.extend(format_pull_request(pr) for pr in pull_requests)
         url = extract_next_url(response_headers)
 
-    print(f"Saved to {output_filename}")
+    if formatted_pull_requests:
+        save_to_file(output_filename, "".join(formatted_pull_requests))
+        print(f"Saved to {output_filename}")
+    else:
+        print("No pull requests found.")
 
 if __name__ == "__main__":
     main()
