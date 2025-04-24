@@ -9,14 +9,16 @@ load_dotenv()
 
 # update with your own in `.env` file
 TOKEN = os.getenv("GITHUB_TOKEN")
-USERNAME = os.getenv("GITHUB_USERNAME")
 OWNER = os.getenv("GITHUB_ORGANIZATION_OR_USER")
 REPO = os.getenv("REPOSITORY_NAME")
 BASE_URL = "https://api.github.com/search/issues"
 HEADERS = {"Authorization": f"token {TOKEN}"}
 
-def get_filename(start_date, end_date):
-    return f"data/PRs_{REPO}_{start_date}_{end_date}_{USERNAME}.md"
+def get_filename(start_date, end_date, username):
+    filename = f"data/PRs_{REPO}_{start_date}_{end_date}"
+    if username:
+        filename += f"_{username}"
+    return f"{filename}.md"
 
 def extract_next_url(headers):
     links = headers.get("Link", "")
@@ -53,14 +55,24 @@ def main():
     parser = argparse.ArgumentParser(description="Fetch merged pull requests from a GitHub repository.")
     parser.add_argument("--start-date", required=True, help="Start date for PRs (YYYY-MM-DD).")
     parser.add_argument("--end-date", required=True, help="End date for PRs (YYYY-MM-DD).")
+    parser.add_argument(
+        "--username",
+        help="GitHub username to filter PRs by assignee. If not provided, fetches PRs for all users.",
+    )
     args = parser.parse_args()
 
     query = (
         f"repo:{OWNER}/{REPO} is:pr is:merged "
-        f"merged:{args.start_date}..{args.end_date} sort:updated-desc assignee:{USERNAME}"
+        f"merged:{args.start_date}..{args.end_date} sort:updated-desc"
     )
+    if args.username:
+        query += f" assignee:{args.username}"
+        print(f"Fetching PRs for user: {args.username}")
+    else:
+        print("Fetching PRs for all users.")
+
     params = {"q": query, "per_page": 100}
-    output_filename = get_filename(args.start_date, args.end_date)
+    output_filename = get_filename(args.start_date, args.end_date, args.username)
     url = BASE_URL
 
     formatted_pull_requests = ""
