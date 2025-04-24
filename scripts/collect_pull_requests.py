@@ -48,10 +48,15 @@ def save_to_file(filename, content):
     filepath.parent.mkdir(parents=True, exist_ok=True)
     filepath.write_text(content, encoding="utf-8")
 
+def validate_env_variables():
+    if not TOKEN or not OWNER or not REPO:
+        raise ValueError(
+            "Please set GITHUB_TOKEN, GITHUB_ORGANIZATION_OR_USER, "
+            "and REPOSITORY_NAME in your environment variables."
+        )
+
 def main():
-    if not TOKEN or not USERNAME or not OWNER or not REPO:
-        raise ValueError("Please set GITHUB_TOKEN, GITHUB_USERNAME, GITHUB_ORGANIZATION_OR_USER, "
-                         "and REPOSITORY_NAME in your environment variables.")
+    validate_env_variables()
 
     parser = argparse.ArgumentParser(description="Fetch merged pull requests from a GitHub repository.")
     parser.add_argument("--start-date", required=True, help="Start date for PRs (YYYY-MM-DD).")
