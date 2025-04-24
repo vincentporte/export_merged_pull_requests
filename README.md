@@ -23,9 +23,19 @@ source .venv/bin/activate
 ```
 2. Execute the script: 
 ```bash
-python scripts/collect_PR.py --start-date 2025-01-01 --end-date 2025-03-31
+python scripts/collect_pull_requests.py --start-date 2025-01-01 --end-date 2025-03-31
 ```
 3. Retrieve the exported PRs from the `data` directory.
+
+4. To run the script with a specific user, use the `--user` flag:
+```bash
+python scripts/collect_pull_requests.py --start-date 2025-01-01 --end-date 2025-03-31 --user <username>
+```
+
+5. To convert the `.md` file to `.pdf`, use the command:
+```bash
+ppandoc data/PRs_<REPO>_<START-DATE>_<END-DATE>.md -o data/PRs_<REPO>_<START-DATE>_<END-DATE>.pdf --pdf-engine=xelatex
+```
 
 ## test
 Run the test suite in virtual env with:
