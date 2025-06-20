@@ -10,15 +10,9 @@ from scripts.collect_pull_requests import (
 )
 
 
-@patch.dict("scripts.collect_pull_requests.__dict__", {"REPO": "repo", "USERNAME": "username"})
 def test_get_filename(monkeypatch):
-    start_date = "2025-05-17"
-    end_date = "2025-07-16"
-    monkeypatch.setenv("USERNAME", "username")
-    monkeypatch.setenv("REPO", "repo")
-    
-    expected_filename = f"data/PRs_repo_{start_date}_{end_date}_username.md"
-    assert get_filename(start_date, end_date, "username") == expected_filename
+    assert get_filename("orga/repo", "2025-05-17", "2025-07-16") == "data/PRs_repo_2025-05-17_2025-07-16.md"
+    assert get_filename("orga/repo", "2025-05-17", "2025-07-16", "username") == "data/PRs_repo_2025-05-17_2025-07-16_username.md"
 
 @pytest.mark.parametrize("headers, expected_url", [
     (

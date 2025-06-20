@@ -11,7 +11,7 @@ A Python script to export merged pull requests assigned to a user within a speci
 
 1. Run the following command to collect merged pull requests for the first quarter of 2025:
 ```bash
-   uv run python scripts/collect_pull_requests.py --start-date 2025-01-01 --end-date 2025-03-31
+   uv run python scripts/collect_pull_requests.py --repository orga/repo --start-date 2025-01-01 --end-date 2025-03-31
 ```
 2. The exported pull requests will be available in the data directory.
 
@@ -23,13 +23,13 @@ source .venv/bin/activate
 ```
 2. Execute the script: 
 ```bash
-python scripts/collect_pull_requests.py --start-date 2025-01-01 --end-date 2025-03-31
+python scripts/collect_pull_requests.py --repository orga/repo --start-date 2025-01-01 --end-date 2025-03-31
 ```
 3. Retrieve the exported PRs from the `data` directory.
 
 4. To run the script with a specific user, use the `--user` flag:
 ```bash
-python scripts/collect_pull_requests.py --start-date 2025-01-01 --end-date 2025-03-31 --user <username>
+python scripts/collect_pull_requests.py --repository orga/repo --start-date 2025-01-01 --end-date 2025-03-31 --user <username>
 ```
 
 5. To convert the `.md` file to `.pdf`, use the command:
