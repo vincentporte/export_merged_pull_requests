@@ -13,10 +13,12 @@ TOKEN = os.getenv("GITHUB_TOKEN")
 BASE_URL = "https://api.github.com/search/issues"
 HEADERS = {"Authorization": f"token {TOKEN}"}
 
-def get_filename(repository, start_date, end_date, username=None):
+def get_filename(repository, start_date, end_date, username=None, label=None):
     filename = f"data/PRs_{repository.split('/')[-1]}_{start_date}_{end_date}"
     if username:
         filename += f"_{username}"
+    if label:
+        filename += f"_{label}"
     return f"{filename}.md"
 
 def extract_next_url(headers):
@@ -63,6 +65,7 @@ def main():
         "--username",
         help="GitHub username to filter PRs by assignee. If not provided, fetches PRs for all users.",
     )
+    parser.add_argument("--label", help="GitHub label to filter PRs by.")
     args = parser.parse_args()
 
     query = (
@@ -74,9 +77,12 @@ def main():
         print(f"Fetching PRs for user: {args.username}")
     else:
         print("Fetching PRs for all users.")
+    if args.label:
+        query += f" label:{args.label}"
+        print(f"Fetching PRs with label: {args.label}")
 
     params = {"q": query, "per_page": 100}
-    output_filename = get_filename(args.repository, args.start_date, args.end_date, args.username)
+    output_filename = get_filename(args.repository, args.start_date, args.end_date, args.username, args.label)
     url = BASE_URL
 
     formatted_pull_requests = []
