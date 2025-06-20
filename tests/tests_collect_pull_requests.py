@@ -5,7 +5,7 @@ import pytest
 from scripts.collect_pull_requests import (
     extract_next_url,
     fetch_pull_requests,
-    format_pull_requests,
+    format_pull_request,
     get_filename,
 )
 
@@ -18,7 +18,7 @@ def test_get_filename(monkeypatch):
     monkeypatch.setenv("REPO", "repo")
     
     expected_filename = f"data/PRs_repo_{start_date}_{end_date}_username.md"
-    assert get_filename(start_date, end_date) == expected_filename
+    assert get_filename(start_date, end_date, "username") == expected_filename
 
 @pytest.mark.parametrize("headers, expected_url", [
     (
@@ -74,5 +74,5 @@ def test_format_pull_request(labels):
         f"{labels[1]}\n\n"
     )
     
-    assert format_pull_requests(pr) == expected_output
+    assert format_pull_request(pr) == expected_output
 
