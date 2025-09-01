@@ -11,7 +11,7 @@ A Python script to export merged pull requests assigned to a user within a speci
 
 1. Run the following command to collect merged pull requests for the first quarter of 2025:
 ```bash
-   uv run python scripts/collect_PR.py --start-date 2025-01-01 --end-date 2025-03-31
+   uv run python scripts/collect_pull_requests.py --start-date 2025-01-01 --end-date 2025-03-31
 ```
 2. The exported pull requests will be available in the data directory.
 
