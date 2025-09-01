@@ -10,15 +10,15 @@ load_dotenv()
 
 # update with your own in `.env` file
 TOKEN = os.getenv("GITHUB_TOKEN")
-OWNER = os.getenv("GITHUB_ORGANIZATION_OR_USER")
-REPO = os.getenv("REPOSITORY_NAME")
 BASE_URL = "https://api.github.com/search/issues"
 HEADERS = {"Authorization": f"token {TOKEN}"}
 
-def get_filename(start_date, end_date, username):
-    filename = f"data/PRs_{REPO}_{start_date}_{end_date}"
+def get_filename(repository, start_date, end_date, username=None, label=None):
+    filename = f"data/PRs_{repository.split('/')[-1]}_{start_date}_{end_date}"
     if username:
         filename += f"_{username}"
+    if label:
+        filename += f"_{label}"
     return f"{filename}.md"
 
 def extract_next_url(headers):
@@ -49,10 +49,9 @@ def save_to_file(filename, content):
     filepath.write_text(content, encoding="utf-8")
 
 def validate_env_variables():
-    if not TOKEN or not OWNER or not REPO:
+    if not TOKEN:
         raise ValueError(
-            "Please set GITHUB_TOKEN, GITHUB_ORGANIZATION_OR_USER, "
-            "and REPOSITORY_NAME in your environment variables."
+            "Please set GITHUB_TOKEN in your environment variables."
         )
 
 def main():
@@ -61,14 +60,16 @@ def main():
     parser = argparse.ArgumentParser(description="Fetch merged pull requests from a GitHub repository.")
     parser.add_argument("--start-date", required=True, help="Start date for PRs (YYYY-MM-DD).")
     parser.add_argument("--end-date", required=True, help="End date for PRs (YYYY-MM-DD).")
+    parser.add_argument("--repository",  required=True, help="GitHub repository full name (orga/repo)")
     parser.add_argument(
         "--username",
         help="GitHub username to filter PRs by assignee. If not provided, fetches PRs for all users.",
     )
+    parser.add_argument("--label", help="GitHub label to filter PRs by.")
     args = parser.parse_args()
 
     query = (
-        f"repo:{OWNER}/{REPO} is:pr is:merged "
+        f"repo:{args.repository} is:pr is:merged "
         f"merged:{args.start_date}..{args.end_date} sort:updated-desc"
     )
     if args.username:
@@ -76,9 +77,12 @@ def main():
         print(f"Fetching PRs for user: {args.username}")
     else:
         print("Fetching PRs for all users.")
+    if args.label:
+        query += f" label:{args.label}"
+        print(f"Fetching PRs with label: {args.label}")
 
     params = {"q": query, "per_page": 100}
-    output_filename = get_filename(args.start_date, args.end_date, args.username)
+    output_filename = get_filename(args.repository, args.start_date, args.end_date, args.username, args.label)
     url = BASE_URL
 
     formatted_pull_requests = []
