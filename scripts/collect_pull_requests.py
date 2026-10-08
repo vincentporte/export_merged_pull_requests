@@ -15,6 +15,36 @@ TOKEN = os.getenv("GITHUB_TOKEN")
 BASE_URL = "https://api.github.com/search/issues"
 HEADERS = {"Authorization": f"token {TOKEN}"}
 
+GH_SHORTCODES = {
+    ":thinking:": "🤔",
+    ":cake:": "🍰",
+    ":desert_island:": "🏝️",
+    ":computer:": "💻",
+    ":rotating_light:": "🚨",
+    ":lipstick:": "💄",
+    ":warning:": "⚠️",
+    ":moneybag:": "💰",
+    ":red_circle:": "🔴",
+    ":zipper_mouth_face:": "🤐",
+    ":tada:": "🎉",
+    ":sweat:": "😓",
+    ":sparkles:": "✨",
+    ":partying_face:": "🥳",
+    ":notebook:": "📓",
+    ":grimacing:": "😬",
+    ":exploding_head:": "🤯",
+    ":clown_face:": "🤡",
+    ":angel:": "👼",
+}
+
+
+def shortcodes_to_utf8(text):
+    if not text:
+        return ""
+    for shortcode, utf8 in GH_SHORTCODES.items():
+        text = text.replace(shortcode, utf8)
+    return text
+
 
 def get_filename(repository, start_date, end_date, username=None, label=None, ext="md"):
     filename = f"data/PRs_{repository.split('/')[-1]}_{start_date}_{end_date}"
@@ -51,7 +81,7 @@ def format_pull_request(pull_request):
     labels_text = f"Labels: {', '.join(labels)}" if labels else "No labels"
     return (
         f"## PR #{pull_request['number']} - {pull_request['title']}\n\n"
-        f"{pull_request['body']}\n\n"
+        f"{shortcodes_to_utf8(pull_request['body'])}\n\n"
         f"Merged At: {pull_request['closed_at']}\n\n"
         f"{labels_text}\n\n"
     )
