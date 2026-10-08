@@ -8,6 +8,8 @@ dependencies = [
     "pytest>=8.3.5",
     "python-dotenv>=1.1.0",
     "requests>=2.32.3",
+    "weasyprint>=70",
+    "markdown>=3.11.0"
 ]
 
 [tool.pytest.ini_options]

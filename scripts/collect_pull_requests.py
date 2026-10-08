@@ -5,6 +5,8 @@ from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
+from markdown import markdown
+from weasyprint import HTML
 
 load_dotenv()
 
@@ -13,18 +15,28 @@ TOKEN = os.getenv("GITHUB_TOKEN")
 BASE_URL = "https://api.github.com/search/issues"
 HEADERS = {"Authorization": f"token {TOKEN}"}
 
-def get_filename(repository, start_date, end_date, username=None, label=None):
+
+def get_filename(repository, start_date, end_date, username=None, label=None, ext="md"):
     filename = f"data/PRs_{repository.split('/')[-1]}_{start_date}_{end_date}"
     if username:
         filename += f"_{username}"
     if label:
         filename += f"_{label}"
-    return f"{filename}.md"
+    return f"{filename}.{ext}"
+
+
+def get_filenames(repository, start_date, end_date, username=None, label=None):
+    return (
+        get_filename(repository, start_date, end_date, username, label, "md"),
+        get_filename(repository, start_date, end_date, username, label, "pdf"),
+    )
+
 
 def extract_next_url(headers):
     links = headers.get("Link", "")
     match = re.search(r'<(https:[^>]+)>; rel="next"', links)
     return match.group(1) if match else None
+
 
 def fetch_pull_requests(url, headers, params):
     response = requests.get(url, headers=headers, params=params)
@@ -32,6 +44,7 @@ def fetch_pull_requests(url, headers, params):
         return response.json().get("items", []), response.headers
     print(f"Error: {response.status_code}, {response.text}")
     return [], response.headers
+
 
 def format_pull_request(pull_request):
     labels = [label['name'] for label in pull_request.get('labels', [])]
@@ -43,16 +56,23 @@ def format_pull_request(pull_request):
         f"{labels_text}\n\n"
     )
 
+
 def save_to_file(filename, content):
     filepath = Path(filename)
     filepath.parent.mkdir(parents=True, exist_ok=True)
     filepath.write_text(content, encoding="utf-8")
+
 
 def validate_env_variables():
     if not TOKEN:
         raise ValueError(
             "Please set GITHUB_TOKEN in your environment variables."
         )
+
+
+def markdown_to_pdf(ifile, ofile):
+    HTML(string=markdown(Path(ifile).read_text(encoding="UTF-8"))).write_pdf(ofile)
+
 
 def main():
     validate_env_variables()
@@ -82,7 +102,9 @@ def main():
         print(f"Fetching PRs with label: {args.label}")
 
     params = {"q": query, "per_page": 100}
-    output_filename = get_filename(args.repository, args.start_date, args.end_date, args.username, args.label)
+    markdown_filename, pdf_filename = get_filenames(
+        args.repository, args.start_date, args.end_date, args.username, args.label
+    )
     url = BASE_URL
 
     formatted_pull_requests = []
@@ -95,10 +117,13 @@ def main():
         url = extract_next_url(response_headers)
 
     if formatted_pull_requests:
-        save_to_file(output_filename, "".join(formatted_pull_requests))
-        print(f"Saved to {output_filename}")
+        save_to_file(markdown_filename, "".join(formatted_pull_requests))
+        print("Generating PDF file...")
+        markdown_to_pdf(markdown_filename, pdf_filename)
+        print(f"Saved to {markdown_filename} and {pdf_filename}")
     else:
         print("No pull requests found.")
+
 
 if __name__ == "__main__":
     main()
